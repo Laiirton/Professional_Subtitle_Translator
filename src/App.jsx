@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { translateSubtitleFile, saveFile } from './services/translationService';
 
 const AppContainer = styled.div`
   display: flex;
@@ -91,25 +92,81 @@ const TranslateButton = styled.button`
   }
 `;
 
+const PreviewBox = styled.div`
+  background: #2A2B3D;
+  border: 1px solid #3B82F6;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #94A3B8;
+`;
+
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [targetLanguage, setTargetLanguage] = useState('pt-BR');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentBlock, setCurrentBlock] = useState('');
 
   const handleFileSelect = async () => {
     try {
-      // Implementar seleção de arquivo
-      console.log('Selecionar arquivo');
+      const [fileHandle] = await window.showOpenFilePicker({
+        types: [{
+          description: 'SubRip Subtitle Files',
+          accept: {
+            'text/srt': ['.srt']
+          }
+        }]
+      });
+      
+      const file = await fileHandle.getFile();
+      setSelectedFile(file);
     } catch (error) {
-      console.error('Erro ao selecionar arquivo:', error);
+      if (error.name !== 'AbortError') {
+        console.error('Erro ao selecionar arquivo:', error);
+        alert('Erro ao selecionar o arquivo. Por favor, tente novamente.');
+      }
     }
   };
 
   const handleTranslate = async () => {
+    if (!selectedFile) return;
+
     try {
-      // Implementar tradução
-      console.log('Traduzindo...');
+      setIsTranslating(true);
+      const content = await selectedFile.text();
+      
+      if (!import.meta.env.VITE_GEMINI_API_KEY) {
+        throw new Error('Chave da API do Gemini não configurada. Configure a variável VITE_GEMINI_API_KEY no arquivo .env');
+      }
+      
+      const translatedContent = await translateSubtitleFile(
+        content,
+        targetLanguage,
+        (progress, currentBlockText) => {
+          setProgress(Math.round(progress));
+          setCurrentBlock(currentBlockText || '');
+        }
+      );
+
+      const newFileName = `${selectedFile.name.replace('.srt', '')}_${targetLanguage}.srt`;
+      const savedFileName = await saveFile(translatedContent, newFileName);
+      
+      if (savedFileName) {
+        alert(`Arquivo traduzido salvo com sucesso como: ${savedFileName}`);
+      }
     } catch (error) {
-      console.error('Erro na tradução:', error);
+      console.error('Erro detalhado:', error);
+      alert(error.message || 'Ocorreu um erro durante a tradução. Verifique se a chave da API está configurada corretamente.');
+    } finally {
+      setIsTranslating(false);
+      setProgress(0);
+      setCurrentBlock('');
     }
   };
 
@@ -118,36 +175,43 @@ function App() {
       <Title>Professional Subtitle Translator</Title>
       
       <FileSection>
-        <FileButton onClick={handleFileSelect}>
-          Select SRT File
+        <FileButton onClick={handleFileSelect} disabled={isTranslating}>
+          {isTranslating ? 'Processando...' : 'Selecionar Arquivo SRT'}
         </FileButton>
         <FileStatus>
-          {selectedFile ? selectedFile.name : 'No file selected'}
+          {selectedFile ? selectedFile.name : 'Nenhum arquivo selecionado'}
         </FileStatus>
       </FileSection>
 
       <LanguageSelect
         value={targetLanguage}
         onChange={(e) => setTargetLanguage(e.target.value)}
+        disabled={isTranslating}
       >
-        <option value="pt-BR">Portuguese (Brazil)</option>
-        <option value="en">English</option>
-        <option value="es">Spanish</option>
-        <option value="fr">French</option>
-        <option value="de">German</option>
-        <option value="it">Italian</option>
-        <option value="ja">Japanese</option>
-        <option value="ko">Korean</option>
-        <option value="zh-CN">Chinese (Simplified)</option>
-        <option value="ru">Russian</option>
+        <option value="pt-BR">Português (Brasil)</option>
+        <option value="en">Inglês</option>
+        <option value="es">Espanhol</option>
+        <option value="fr">Francês</option>
+        <option value="de">Alemão</option>
+        <option value="it">Italiano</option>
+        <option value="ja">Japonês</option>
+        <option value="ko">Coreano</option>
+        <option value="zh-CN">Chinês (Simplificado)</option>
+        <option value="ru">Russo</option>
       </LanguageSelect>
 
       <TranslateButton
         onClick={handleTranslate}
-        disabled={!selectedFile}
+        disabled={!selectedFile || isTranslating}
       >
-        Translate
+        {isTranslating ? `${progress}%` : 'Traduzir'}
       </TranslateButton>
+
+      {isTranslating && currentBlock && (
+        <PreviewBox>
+          {currentBlock}
+        </PreviewBox>
+      )}
     </AppContainer>
   );
 }
