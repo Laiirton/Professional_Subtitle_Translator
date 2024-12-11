@@ -166,6 +166,19 @@ const QueueItem = styled.div`
   border-radius: 6px;
 `;
 
+const QueueItemContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+`;
+
+const SaveButton = styled(FileButton)`
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  margin-right: 1rem;
+`;
+
 const QueueStatus = styled.span`
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -281,31 +294,6 @@ function App() {
   const [isTranslating, setIsTranslating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentFileIndex, setCurrentFileIndex] = useState(-1);
-  const [outputFolder, setOutputFolder] = useState(null);
-
-  const selectOutputFolder = async () => {
-    try {
-      const handle = await window.showDirectoryPicker({
-        mode: 'readwrite'
-      });
-
-      try {
-        // Tenta verificar se podemos criar arquivos na pasta
-        const testHandle = await handle.getFileHandle('test.tmp', { create: true });
-        // Se conseguir criar, remove o arquivo de teste
-        await testHandle.remove();
-        
-        setOutputFolder(handle);
-      } catch (error) {
-        throw new Error('A pasta selecionada não permite a criação de arquivos. Por favor, escolha outra pasta.');
-      }
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        console.error('Erro ao selecionar pasta:', error);
-        alert(error.message || 'Erro ao selecionar a pasta de destino. Por favor, escolha uma pasta que você tenha permissão para salvar arquivos.');
-      }
-    }
-  };
 
   const handleFileSelect = async () => {
     try {
@@ -341,15 +329,27 @@ function App() {
   };
 
   const saveTranslatedFile = async (fileIndex, translatedContent) => {
-    if (!outputFolder || !translatedContent) return;
+    if (!translatedContent) return;
 
     const currentFile = fileQueue[fileIndex];
     if (!currentFile) return;
 
     try {
       const newFileName = `${currentFile.file.name.replace('.srt', '')}_${targetLanguage}.srt`;
-      const fileHandle = await outputFolder.getFileHandle(newFileName, { create: true });
-      const writable = await fileHandle.createWritable();
+      
+      // Usar showSaveFilePicker para permitir que o usuário escolha onde salvar
+      const handle = await window.showSaveFilePicker({
+        suggestedName: newFileName,
+        types: [{
+          description: 'Arquivo de Legendas',
+          accept: {
+            'text/plain': ['.srt'],
+          },
+        }],
+      });
+
+      // Criar um writable stream e escrever o conteúdo
+      const writable = await handle.createWritable();
       await writable.write(translatedContent);
       await writable.close();
 
@@ -359,16 +359,18 @@ function App() {
 
       console.log(`Arquivo salvo com sucesso: ${newFileName}`);
     } catch (error) {
-      console.error('Erro ao salvar arquivo:', error);
-      setFileQueue(prevQueue => prevQueue.map((item, index) => 
-        index === fileIndex ? { ...item, status: 'erro', error: 'Erro ao salvar o arquivo' } : item
-      ));
-      alert('Erro ao salvar o arquivo. Por favor, verifique a pasta de destino e tente novamente.');
+      if (error.name !== 'AbortError') {
+        console.error('Erro ao salvar arquivo:', error);
+        setFileQueue(prevQueue => prevQueue.map((item, index) => 
+          index === fileIndex ? { ...item, status: 'erro', error: 'Erro ao salvar o arquivo' } : item
+        ));
+        alert('Erro ao salvar o arquivo. Por favor, tente novamente.');
+      }
     }
   };
 
   const processFile = async (fileIndex) => {
-    if (fileIndex < 0 || fileIndex >= fileQueue.length || !outputFolder) return;
+    if (fileIndex < 0 || fileIndex >= fileQueue.length) return;
 
     setCurrentFileIndex(fileIndex);
     setIsTranslating(true);
@@ -397,7 +399,9 @@ function App() {
         }
       );
 
-      await saveTranslatedFile(fileIndex, translatedContent);
+      setFileQueue(prevQueue => prevQueue.map((item, index) => 
+        index === fileIndex ? { ...item, status: 'concluido', progress: 100, translatedContent } : item
+      ));
 
       const nextFileIndex = fileQueue.findIndex((file, index) => index > fileIndex && file.status === 'pendente');
       if (nextFileIndex !== -1) {
@@ -418,11 +422,6 @@ function App() {
   };
 
   const handleTranslate = () => {
-    if (!outputFolder) {
-      alert('Por favor, selecione uma pasta de destino antes de iniciar a tradução.');
-      return;
-    }
-    
     const nextFileIndex = fileQueue.findIndex(file => file.status === 'pendente');
     if (nextFileIndex !== -1) {
       processFile(nextFileIndex);
@@ -451,14 +450,6 @@ function App() {
               {fileQueue.length === 0 ? 'Nenhum arquivo selecionado' : `${fileQueue.length} arquivo(s) na fila`}
             </FileStatus>
           </ButtonColumn>
-          <ButtonColumn>
-            <FileButton onClick={selectOutputFolder} disabled={isTranslating}>
-              Selecionar Pasta de Destino
-            </FileButton>
-            <FileStatus>
-              {outputFolder ? outputFolder.name : 'Nenhuma pasta selecionada'}
-            </FileStatus>
-          </ButtonColumn>
         </ButtonGroup>
       </FileSection>
 
@@ -482,9 +473,9 @@ function App() {
       {fileQueue.length > 0 && !isTranslating && (
         <TranslateButton
           onClick={handleTranslate}
-          disabled={!fileQueue.some(file => file.status === 'pendente') || !outputFolder}
+          disabled={!fileQueue.some(file => file.status === 'pendente')}
         >
-          Traduzir Próximo Arquivo
+          Traduzir
         </TranslateButton>
       )}
 
@@ -499,15 +490,20 @@ function App() {
         <QueueContainer>
           {fileQueue.map((item, index) => (
             <QueueItem key={index} $status={item.status}>
-              <div>
+              <QueueItemContent>
                 <span>{item.file.name}</span>
                 <StatusBadge $status={item.status}>
-                  {item.status === 'em_progresso' && `${Math.round(item.progress)}%`}
+                  {item.status === 'em_progresso' && 'Processando'}
                   {item.status === 'pendente' && 'Aguardando'}
                   {item.status === 'concluido' && 'Concluído'}
                   {item.status === 'erro' && 'Erro'}
                 </StatusBadge>
-              </div>
+              </QueueItemContent>
+              {item.status === 'concluido' && item.translatedContent && (
+                <SaveButton onClick={() => saveTranslatedFile(index, item.translatedContent)}>
+                  Salvar
+                </SaveButton>
+              )}
               {item.status !== 'em_progresso' && (
                 <RemoveButton onClick={() => removeFromQueue(index)}>
                   ✕
