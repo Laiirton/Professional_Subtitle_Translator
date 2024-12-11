@@ -10,6 +10,11 @@ const GlobalStyle = createGlobalStyle`
     box-sizing: border-box;
   }
 
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+  }
+
   body {
     margin: 0;
     padding: 0;
@@ -20,6 +25,11 @@ const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     background: #1a1b1e;
     color: #ffffff;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
   }
 `;
 
