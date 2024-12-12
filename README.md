@@ -12,7 +12,7 @@ Tradutor profissional de legendas com interface moderna e intuitiva. Transforme 
 
 ## 📥 Download e Uso
 
-1. Baixe o instalador compatível com seu sistema operacional
+1. Baixe o instalador que está disponivel no release
 2. Execute a instalação
 3. Abra o aplicativo
 4. Selecione o arquivo .srt
