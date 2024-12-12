@@ -1,7 +1,24 @@
-# Tauri + React
+# Professional Subtitle Translator 🎬
 
-This template should help get you started developing with Tauri and React in Vite.
+Tradutor profissional de legendas com interface moderna e intuitiva. Transforme seus arquivos .srt para qualquer idioma de forma rápida e eficiente.
 
-## Recommended IDE Setup
+## ✨ Principais Recursos
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- 🚀 Tradução rápida de legendas
+- 🌍 Suporte a múltiplos idiomas
+- 💻 Interface moderna e fácil de usar
+- 🔒 Processamento 100% local das legendas
+- 🎯 Preserva formatação e tempos originais
+
+## 📥 Download e Uso
+
+1. Baixe o instalador compatível com seu sistema operacional
+2. Execute a instalação
+3. Abra o aplicativo
+4. Selecione o arquivo .srt
+5. Escolha os idiomas de origem e destino
+6. Clique em traduzir
+
+## 🤝 Suporte
+
+Encontrou algum problema? Abra uma issue no repositório do projeto.
