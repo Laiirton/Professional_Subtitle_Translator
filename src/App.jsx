@@ -459,6 +459,7 @@ function App() {
         disabled={isTranslating}
       >
         <option value="pt-BR">Português (Brasil)</option>
+        <option value="pt-PT">Português (Portugal)</option>
         <option value="en">Inglês</option>
         <option value="es">Espanhol</option>
         <option value="fr">Francês</option>
@@ -467,7 +468,39 @@ function App() {
         <option value="ja">Japonês</option>
         <option value="ko">Coreano</option>
         <option value="zh-CN">Chinês (Simplificado)</option>
+        <option value="zh-TW">Chinês (Tradicional)</option>
         <option value="ru">Russo</option>
+        <option value="ar">Árabe</option>
+        <option value="hi">Hindi</option>
+        <option value="tr">Turco</option>
+        <option value="nl">Holandês</option>
+        <option value="pl">Polonês</option>
+        <option value="vi">Vietnamita</option>
+        <option value="th">Tailandês</option>
+        <option value="id">Indonésio</option>
+        <option value="ms">Malaio</option>
+        <option value="fil">Filipino</option>
+        <option value="bn">Bengali</option>
+        <option value="uk">Ucraniano</option>
+        <option value="cs">Tcheco</option>
+        <option value="sv">Sueco</option>
+        <option value="da">Dinamarquês</option>
+        <option value="fi">Finlandês</option>
+        <option value="el">Grego</option>
+        <option value="he">Hebraico</option>
+        <option value="hu">Húngaro</option>
+        <option value="no">Norueguês</option>
+        <option value="ro">Romeno</option>
+        <option value="sk">Eslovaco</option>
+        <option value="bg">Búlgaro</option>
+        <option value="hr">Croata</option>
+        <option value="sr">Sérvio</option>
+        <option value="sl">Esloveno</option>
+        <option value="et">Estoniano</option>
+        <option value="lv">Letão</option>
+        <option value="lt">Lituano</option>
+        <option value="fa">Persa</option>
+        <option value="ur">Urdu</option>
       </LanguageSelect>
 
       {fileQueue.length > 0 && !isTranslating && (
