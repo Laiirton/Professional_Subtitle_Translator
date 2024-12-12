@@ -33,6 +33,8 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+document.addEventListener('contextmenu', (e) => e.preventDefault());
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GlobalStyle />
