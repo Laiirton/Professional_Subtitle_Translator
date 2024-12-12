@@ -1,5 +1,5 @@
 [package]
-name = "srt_translator"
+name = "Professional_Subtitle_Translator"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
