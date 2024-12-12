@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { translateSubtitleFile } from './services/translationService';
 
+// Styled components definitions
 const AppContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -290,12 +291,14 @@ const StatusBadge = styled.span`
 `;
 
 function App() {
-  const [fileQueue, setFileQueue] = useState([]);
-  const [targetLanguage, setTargetLanguage] = useState('pt-BR');
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentFileIndex, setCurrentFileIndex] = useState(-1);
+  // State management for file queue and translation process
+  const [fileQueue, setFileQueue] = useState([]); // Array of files to be processed
+  const [targetLanguage, setTargetLanguage] = useState('pt-BR'); // Selected target language
+  const [isTranslating, setIsTranslating] = useState(false); // Translation in progress flag
+  const [progress, setProgress] = useState(0); // Current translation progress
+  const [currentFileIndex, setCurrentFileIndex] = useState(-1); // Index of file being processed
 
+  // Handle file selection through system dialog
   const handleFileSelect = async () => {
     try {
       const fileHandles = await window.showOpenFilePicker({
@@ -329,6 +332,7 @@ function App() {
     }
   };
 
+  // Save translated content to a new file
   const saveTranslatedFile = async (fileIndex, translatedContent) => {
     if (!translatedContent) return;
 
@@ -368,6 +372,7 @@ function App() {
     }
   };
 
+  // Process a single file in the queue
   const processFile = async (fileIndex) => {
     if (fileIndex < 0 || fileIndex >= fileQueue.length) return;
 
@@ -420,6 +425,7 @@ function App() {
     }
   };
 
+  // Start the translation process for all pending files
   const handleTranslate = () => {
     const nextFileIndex = fileQueue.findIndex(file => file.status === 'pendente');
     if (nextFileIndex !== -1) {
@@ -427,6 +433,7 @@ function App() {
     }
   };
 
+  // Remove a file from the queue
   const removeFromQueue = (index) => {
     if (index === currentFileIndex && isTranslating) {
       alert('Cannot remove a file that is being translated.');
@@ -435,6 +442,7 @@ function App() {
     setFileQueue(prevQueue => prevQueue.filter((_, i) => i !== index));
   };
 
+  // Component render
   return (
     <AppContainer onContextMenu={(e) => e.preventDefault()}>
       <Title>Professional Subtitle Translator</Title>
