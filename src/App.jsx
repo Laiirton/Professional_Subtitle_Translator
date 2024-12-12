@@ -10,6 +10,7 @@ const AppContainer = styled.div`
   color: #ffffff;
   padding: 2rem;
   gap: 2rem;
+  onContextMenu: (e) => e.preventDefault();
 `;
 
 const Title = styled.h1`
@@ -322,8 +323,8 @@ function App() {
       setFileQueue(prevQueue => [...prevQueue, ...newFiles]);
     } catch (error) {
       if (error.name !== 'AbortError') {
-        console.error('Erro ao selecionar arquivos:', error);
-        alert('Erro ao selecionar os arquivos. Por favor, tente novamente.');
+        console.error('Error selecting files:', error);
+        alert('Error selecting files. Please try again.');
       }
     }
   };
@@ -337,18 +338,16 @@ function App() {
     try {
       const newFileName = `${currentFile.file.name.replace('.srt', '')}_${targetLanguage}.srt`;
       
-      // Usar showSaveFilePicker para permitir que o usuário escolha onde salvar
       const handle = await window.showSaveFilePicker({
         suggestedName: newFileName,
         types: [{
-          description: 'Arquivo de Legendas',
+          description: 'Subtitle File',
           accept: {
             'text/plain': ['.srt'],
           },
         }],
       });
 
-      // Criar um writable stream e escrever o conteúdo
       const writable = await handle.createWritable();
       await writable.write(translatedContent);
       await writable.close();
@@ -357,14 +356,14 @@ function App() {
         index === fileIndex ? { ...item, status: 'concluido', progress: 100 } : item
       ));
 
-      console.log(`Arquivo salvo com sucesso: ${newFileName}`);
+      console.log(`File saved successfully: ${newFileName}`);
     } catch (error) {
       if (error.name !== 'AbortError') {
-        console.error('Erro ao salvar arquivo:', error);
+        console.error('Error saving file:', error);
         setFileQueue(prevQueue => prevQueue.map((item, index) => 
-          index === fileIndex ? { ...item, status: 'erro', error: 'Erro ao salvar o arquivo' } : item
+          index === fileIndex ? { ...item, status: 'erro', error: 'Error saving file' } : item
         ));
-        alert('Erro ao salvar o arquivo. Por favor, tente novamente.');
+        alert('Error saving file. Please try again.');
       }
     }
   };
@@ -385,7 +384,7 @@ function App() {
       const content = await currentFile.file.text();
       
       if (!import.meta.env.VITE_GEMINI_API_KEY) {
-        throw new Error('Chave da API do Gemini não configurada. Configure a variável VITE_GEMINI_API_KEY no arquivo .env');
+        throw new Error('Gemini API key not configured. Please set the VITE_GEMINI_API_KEY variable in the .env file');
       }
       
       const translatedContent = await translateSubtitleFile(
@@ -409,11 +408,11 @@ function App() {
       }
 
     } catch (error) {
-      console.error('Erro detalhado:', error);
+      console.error('Detailed error:', error);
       setFileQueue(prevQueue => prevQueue.map((item, index) => 
         index === fileIndex ? { ...item, status: 'erro', error: error.message } : item
       ));
-      alert(error.message || 'Ocorreu um erro durante a tradução. Verifique se a chave da API está configurada corretamente.');
+      alert(error.message || 'An error occurred during translation. Please check if the API key is configured correctly.');
     } finally {
       setIsTranslating(false);
       setProgress(0);
@@ -430,24 +429,24 @@ function App() {
 
   const removeFromQueue = (index) => {
     if (index === currentFileIndex && isTranslating) {
-      alert('Não é possível remover um arquivo que está sendo traduzido.');
+      alert('Cannot remove a file that is being translated.');
       return;
     }
     setFileQueue(prevQueue => prevQueue.filter((_, i) => i !== index));
   };
 
   return (
-    <AppContainer>
+    <AppContainer onContextMenu={(e) => e.preventDefault()}>
       <Title>Professional Subtitle Translator</Title>
       
       <FileSection>
         <ButtonGroup>
           <ButtonColumn>
             <FileButton onClick={handleFileSelect} disabled={isTranslating}>
-              {isTranslating ? 'Processando...' : 'Selecionar Arquivos SRT'}
+              {isTranslating ? 'Processing...' : 'Select SRT Files'}
             </FileButton>
             <FileStatus>
-              {fileQueue.length === 0 ? 'Nenhum arquivo selecionado' : `${fileQueue.length} arquivo(s) na fila`}
+              {fileQueue.length === 0 ? 'No files selected' : `${fileQueue.length} file(s) in queue`}
             </FileStatus>
           </ButtonColumn>
         </ButtonGroup>
@@ -458,48 +457,48 @@ function App() {
         onChange={(e) => setTargetLanguage(e.target.value)}
         disabled={isTranslating}
       >
-        <option value="pt-BR">Português (Brasil)</option>
-        <option value="pt-PT">Português (Portugal)</option>
-        <option value="en">Inglês</option>
-        <option value="es">Espanhol</option>
-        <option value="fr">Francês</option>
-        <option value="de">Alemão</option>
-        <option value="it">Italiano</option>
-        <option value="ja">Japonês</option>
-        <option value="ko">Coreano</option>
-        <option value="zh-CN">Chinês (Simplificado)</option>
-        <option value="zh-TW">Chinês (Tradicional)</option>
-        <option value="ru">Russo</option>
-        <option value="ar">Árabe</option>
+        <option value="pt-BR">Portuguese (Brazil)</option>
+        <option value="pt-PT">Portuguese (Portugal)</option>
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="it">Italian</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+        <option value="zh-CN">Chinese (Simplified)</option>
+        <option value="zh-TW">Chinese (Traditional)</option>
+        <option value="ru">Russian</option>
+        <option value="ar">Arabic</option>
         <option value="hi">Hindi</option>
-        <option value="tr">Turco</option>
-        <option value="nl">Holandês</option>
-        <option value="pl">Polonês</option>
-        <option value="vi">Vietnamita</option>
-        <option value="th">Tailandês</option>
-        <option value="id">Indonésio</option>
-        <option value="ms">Malaio</option>
+        <option value="tr">Turkish</option>
+        <option value="nl">Dutch</option>
+        <option value="pl">Polish</option>
+        <option value="vi">Vietnamese</option>
+        <option value="th">Thai</option>
+        <option value="id">Indonesian</option>
+        <option value="ms">Malay</option>
         <option value="fil">Filipino</option>
         <option value="bn">Bengali</option>
-        <option value="uk">Ucraniano</option>
-        <option value="cs">Tcheco</option>
-        <option value="sv">Sueco</option>
-        <option value="da">Dinamarquês</option>
-        <option value="fi">Finlandês</option>
-        <option value="el">Grego</option>
-        <option value="he">Hebraico</option>
-        <option value="hu">Húngaro</option>
-        <option value="no">Norueguês</option>
-        <option value="ro">Romeno</option>
-        <option value="sk">Eslovaco</option>
-        <option value="bg">Búlgaro</option>
-        <option value="hr">Croata</option>
-        <option value="sr">Sérvio</option>
-        <option value="sl">Esloveno</option>
-        <option value="et">Estoniano</option>
-        <option value="lv">Letão</option>
-        <option value="lt">Lituano</option>
-        <option value="fa">Persa</option>
+        <option value="uk">Ukrainian</option>
+        <option value="cs">Czech</option>
+        <option value="sv">Swedish</option>
+        <option value="da">Danish</option>
+        <option value="fi">Finnish</option>
+        <option value="el">Greek</option>
+        <option value="he">Hebrew</option>
+        <option value="hu">Hungarian</option>
+        <option value="no">Norwegian</option>
+        <option value="ro">Romanian</option>
+        <option value="sk">Slovak</option>
+        <option value="bg">Bulgarian</option>
+        <option value="hr">Croatian</option>
+        <option value="sr">Serbian</option>
+        <option value="sl">Slovenian</option>
+        <option value="et">Estonian</option>
+        <option value="lv">Latvian</option>
+        <option value="lt">Lithuanian</option>
+        <option value="fa">Persian</option>
         <option value="ur">Urdu</option>
       </LanguageSelect>
 
@@ -508,7 +507,7 @@ function App() {
           onClick={handleTranslate}
           disabled={!fileQueue.some(file => file.status === 'pendente')}
         >
-          Traduzir
+          Translate
         </TranslateButton>
       )}
 
@@ -526,15 +525,15 @@ function App() {
               <QueueItemContent>
                 <span>{item.file.name}</span>
                 <StatusBadge $status={item.status}>
-                  {item.status === 'em_progresso' && 'Processando'}
-                  {item.status === 'pendente' && 'Aguardando'}
-                  {item.status === 'concluido' && 'Concluído'}
-                  {item.status === 'erro' && 'Erro'}
+                  {item.status === 'em_progresso' && 'Processing'}
+                  {item.status === 'pendente' && 'Waiting'}
+                  {item.status === 'concluido' && 'Completed'}
+                  {item.status === 'erro' && 'Error'}
                 </StatusBadge>
               </QueueItemContent>
               {item.status === 'concluido' && item.translatedContent && (
                 <SaveButton onClick={() => saveTranslatedFile(index, item.translatedContent)}>
-                  Salvar
+                  Save
                 </SaveButton>
               )}
               {item.status !== 'em_progresso' && (
