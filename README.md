@@ -7,7 +7,7 @@ Tradutor profissional de legendas com interface moderna e intuitiva. Transforme 
 - 🚀 Tradução rápida de legendas
 - 🌍 Suporte a múltiplos idiomas
 - 💻 Interface moderna e fácil de usar
-- 🔒 Processamento eficaz e acurado nas legendas levando em conta todo o contexto
+- 🔒 Processamento eficaz e acurado nas legendas com base no contexto das cenas
 - 🎯 Preserva formatação e tempos originais
 
 ## 📥 Download e Uso
